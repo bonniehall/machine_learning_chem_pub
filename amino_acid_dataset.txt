@@ -1,0 +1,30 @@
+
+from rdkit import Chem
+from rdkit.Chem import Descriptors
+from rdkit.Chem import PandasTools
+
+# Ensure molecules are rendered in the notebook
+PandasTools.RenderImagesInAllDataFrames(images=True)
+
+filehandle = open("data/amino_acids.txt", "r")
+amino_acid_data = filehandle.readlines()
+filehandle.close()
+
+# Delete the new line character at the end of each smiles string
+smiles_list = []
+for smiles in amino_acid_data:
+    smiles = smiles.strip()
+    smiles_list.append(smiles)
+
+# Initialize the dataframe with the list
+df = pd.DataFrame(smiles_list, columns=["SMILES"])
+
+# Make the molecule column first
+df["Molecule"] = df["SMILES"].apply(Chem.MolFromSmiles)
+
+# Now the other descriptors
+df["MolWt"] = df["Molecule"].apply(Descriptors.MolWt)
+df["NumHeavy"] = df["Molecule"].apply(Descriptors.HeavyAtomCount)
+df["TPSA"] = df["Molecule"].apply(Descriptors.rdMolDescriptors.CalcTPSA)
+
+df.head(3)
